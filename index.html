@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メダルスロットマシーン</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #2c3e50;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            width: 400px;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #f1c40f;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-board {
+            display: flex;
+            justify-content: space-between;
+            background-color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            border: 2px solid #34495e;
+        }
+
+        .medals {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+
+        .slot-machine {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 4px solid #7f8c8d;
+        }
+
+        .reels {
+            display: flex;
+            justify-content: space-around;
+            background-color: #000;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .reel {
+            width: 80px;
+            height: 100px;
+            background-color: #fff;
+            color: #000;
+            font-size: 3.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        .spinning {
+            animation: blur-spin 0.1s infinite alternate;
+        }
+
+        @keyframes blur-spin {
+            0% { filter: blur(2px); transform: translateY(-5px); }
+            100% { filter: blur(2px); transform: translateY(5px); }
+        }
+
+        button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #c0392b;
+            transition: all 0.1s;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        button:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 #c0392b;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            box-shadow: 0 5px 0 #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-height: 36px;
+        }
+
+        .win-animation {
+            animation: flash 0.5s infinite alternate;
+        }
+
+        @keyframes flash {
+            0% { color: #f1c40f; text-shadow: 0 0 10px #f1c40f; }
+            100% { color: #e74c3c; text-shadow: 0 0 20px #e74c3c; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>SLOT MACHINE</h1>
+        
+        <div class="status-board">
+            <div>CREDIT: <span class="medals" id="medalsDisplay">100</span></div>
+            <div>BET: 10</div>
+        </div>
+
+        <div class="slot-machine">
+            <div class="reels">
+                <div class="reel" id="reel1">🍒</div>
+                <div class="reel" id="reel2">🔔</div>
+                <div class="reel" id="reel3">7️⃣</div>
+            </div>
+        </div>
+
+        <button id="spinBtn">SPIN!</button>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const symbols = ["🍒", "🍉", "🍇", "🍋", "🔔", "💎", "7️⃣"];
+        const reels = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+        const spinBtn = document.getElementById('spinBtn');
+        const messageDisplay = document.getElementById('message');
+        const medalsDisplay = document.getElementById('medalsDisplay');
+
+        let medals = 100;
+        const betAmount = 10;
+        let isSpinning = false;
+
+        function getRandomSymbol() {
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+
+        function updateMedalsDisplay() {
+            medalsDisplay.textContent = medals;
+        }
+
+        function checkWin(results) {
+            messageDisplay.classList.remove('win-animation');
+
+            if (results[0] === results[1] && results[1] === results[2]) {
+                let payout = 0;
+                if (results[0] === "7️⃣") {
+                    payout = 500;
+                    messageDisplay.textContent = `JACKPOT!! ${payout} WIN! 🎉`;
+                } else if (results[0] === "💎") {
+                    payout = 300;
+                    messageDisplay.textContent = `BIG WIN! ${payout} WIN! ✨`;
+                } else {
+                    payout = 100;
+                    messageDisplay.textContent = `WIN! ${payout} WIN! 🎊`;
+                }
+                medals += payout;
+                messageDisplay.classList.add('win-animation');
+            } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                // 2つ揃い（小当たり）
+                const payout = 20;
+                medals += payout;
+                messageDisplay.textContent = `Any 2! ${payout} WIN!`;
+                messageDisplay.style.color = "#3498db";
+            } else {
+                messageDisplay.textContent = "Try Again...";
+                messageDisplay.style.color = "#bdc3c7";
+            }
+            updateMedalsDisplay();
+        }
+
+        function spin() {
+            if (isSpinning) return;
+            if (medals < betAmount) {
+                messageDisplay.textContent = "クレジットが足りません！";
+                messageDisplay.style.color = "#e74c3c";
+                return;
+            }
+
+            // ベットを消費
+            medals -= betAmount;
+            updateMedalsDisplay();
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+            messageDisplay.textContent = "";
+            messageDisplay.className = ""; // アニメーションリセット
+            messageDisplay.style.color = "";
+
+            // 回転アニメーション開始
+            reels.forEach(reel => reel.classList.add('spinning'));
+
+            let count = 0;
+            const maxCount = 20; // 回転回数
+            const intervalTime = 50; // 更新間隔(ms)
+
+            const spinInterval = setInterval(() => {
+                reels.forEach(reel => {
+                    reel.textContent = getRandomSymbol();
+                });
+                count++;
+
+                if (count >= maxCount) {
+                    clearInterval(spinInterval);
+                    reels.forEach(reel => reel.classList.remove('spinning'));
+
+                    // 最終結果を決定
+                    const finalResults = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+                    
+                    reels.forEach((reel, index) => {
+                        reel.textContent = finalResults[index];
+                    });
+
+                    checkWin(finalResults);
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                }
+            }, intervalTime);
+        }
+
+        spinBtn.addEventListener('click', spin);
+    </script>
+</body>
+</html>
