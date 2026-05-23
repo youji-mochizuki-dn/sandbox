@@ -3,261 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>メダルスロットマシーン</title>
+    <title>カジノスロット - 5 REELS</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
+            font-family: 'Georgia', 'Times New Roman', 'Hiragino Mincho ProN', serif;
+            background-color: #1a0508;
+            background-image: radial-gradient(#4a0e17 20%, #1a0508 80%);
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            overflow-x: hidden;
         }
 
-        .container {
-            background-color: #2c3e50;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        .casino-cabinet {
+            background: linear-gradient(135deg, #2c080c 0%, #110204 100%);
+            border: 6px double #d4af37;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(212, 175, 55, 0.3);
             text-align: center;
-            width: 400px;
+            width: 620px;
+            position: relative;
         }
 
+        /* イルミネーション風ヘッダー */
         h1 {
             margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 2.2rem;
             color: #f1c40f;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .status-board {
-            display: flex;
-            justify-content: space-between;
-            background-color: #000;
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            border: 2px solid #34495e;
-        }
-
-        .medals {
-            color: #f1c40f;
+            text-shadow: 0 0 10px #f1c40f, 2px 2px 2px #000;
+            letter-spacing: 5px;
             font-weight: bold;
         }
 
-        .slot-machine {
-            background-color: #ecf0f1;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 4px solid #7f8c8d;
-        }
-
-        .reels {
+        /* ステータス表示 */
+        .status-panel {
             display: flex;
             justify-content: space-around;
             background-color: #000;
+            border: 3px solid #d4af37;
+            border-radius: 10px;
             padding: 10px;
-            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
         }
 
-        .reel {
-            width: 80px;
-            height: 100px;
-            background-color: #fff;
+        .status-item span {
+            font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .status-item .gold-text {
+            color: #f39c12;
+            text-shadow: 0 0 5px #f39c12;
+        }
+
+        /* スロット本体 (3段×5列) */
+        .slot-grid {
+            display: flex;
+            justify-content: space-between;
+            background-color: #222;
+            border: 4px solid #b8860b;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 25px;
+            background-image: linear-gradient(#111 50%, #222 50%);
+            background-size: 100% 10px;
+        }
+
+        .reel-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 18%;
+            background-color: #111;
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .cell {
+            height: 90px;
+            background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
             color: #000;
-            font-size: 3.5rem;
+            font-size: 3.2rem;
             display: flex;
             justify-content: center;
             align-items: center;
+            margin: 4px 0;
             border-radius: 5px;
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.4);
-            overflow: hidden;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
+            position: relative;
+            user-select: none;
         }
 
-        .spinning {
-            animation: blur-spin 0.1s infinite alternate;
+        /* 回転中のブレ演出 */
+        .spinning-cell {
+            animation: blur-roll 0.06s infinite linear;
         }
 
-        @keyframes blur-spin {
-            0% { filter: blur(2px); transform: translateY(-5px); }
-            100% { filter: blur(2px); transform: translateY(5px); }
+        @keyframes blur-roll {
+            0% { transform: translateY(-8px); filter: blur(3px); }
+            50% { filter: blur(4px); }
+            100% { transform: translateY(8px); filter: blur(3px); }
         }
 
-        button {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 0 #c0392b;
-            transition: all 0.1s;
+        /* 当たりラインのバックライト点滅 */
+        .hit-highlight {
+            animation: hit-flash 0.3s infinite alternate;
+            z-index: 2;
+            box-shadow: 0 0 20px #f1c40f, inset 0 0 15px #f1c40f;
+            border: 2px solid #fff;
         }
 
-        button:hover {
-            background-color: #c0392b;
+        @keyframes hit-flash {
+            0% { background: #f1c40f; transform: scale(1.03); }
+            100% { background: #ffffff; transform: scale(1.03); }
         }
 
-        button:active {
-            transform: translateY(5px);
-            box-shadow: 0 0 0 #c0392b;
+        /* コントロール部分 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
         }
 
-        button:disabled {
-            background-color: #95a5a6;
-            box-shadow: 0 5px 0 #7f8c8d;
-            cursor: not-allowed;
-            transform: none;
+        .bet-info {
+            font-size: 1.1rem;
+            color: #bdc3c7;
+            text-align: left;
+            border-left: 3px solid #d4af37;
+            padding-left: 10px;
+            line-height: 1.4;
         }
 
-        #message {
-            margin-top: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            min-height: 36px;
-        }
-
-        .win-animation {
-            animation: flash 0.5s infinite alternate;
-        }
-
-        @keyframes flash {
-            0% { color: #f1c40f; text-shadow: 0 0 10px #f1c40f; }
-            100% { color: #e74c3c; text-shadow: 0 0 20px #e74c3c; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h1>SLOT MACHINE</h1>
-        
-        <div class="status-board">
-            <div>CREDIT: <span class="medals" id="medalsDisplay">100</span></div>
-            <div>BET: 10</div>
-        </div>
-
-        <div class="slot-machine">
-            <div class="reels">
-                <div class="reel" id="reel1">🍒</div>
-                <div class="reel" id="reel2">🔔</div>
-                <div class="reel" id="reel3">7️⃣</div>
-            </div>
-        </div>
-
-        <button id="spinBtn">SPIN!</button>
-
-        <div id="message"></div>
-    </div>
-
-    <script>
-        const symbols = ["🍒", "🍉", "🍇", "🍋", "🔔", "💎", "7️⃣"];
-        const reels = [
-            document.getElementById('reel1'),
-            document.getElementById('reel2'),
-            document.getElementById('reel3')
-        ];
-        const spinBtn = document.getElementById('spinBtn');
-        const messageDisplay = document.getElementById('message');
-        const medalsDisplay = document.getElementById('medalsDisplay');
-
-        let medals = 100;
-        const betAmount = 10;
-        let isSpinning = false;
-
-        function getRandomSymbol() {
-            return symbols[Math.floor(Math.random() * symbols.length)];
-        }
-
-        function updateMedalsDisplay() {
-            medalsDisplay.textContent = medals;
-        }
-
-        function checkWin(results) {
-            messageDisplay.classList.remove('win-animation');
-
-            if (results[0] === results[1] && results[1] === results[2]) {
-                let payout = 0;
-                if (results[0] === "7️⃣") {
-                    payout = 500;
-                    messageDisplay.textContent = `JACKPOT!! ${payout} WIN! 🎉`;
-                } else if (results[0] === "💎") {
-                    payout = 300;
-                    messageDisplay.textContent = `BIG WIN! ${payout} WIN! ✨`;
-                } else {
-                    payout = 100;
-                    messageDisplay.textContent = `WIN! ${payout} WIN! 🎊`;
-                }
-                medals += payout;
-                messageDisplay.classList.add('win-animation');
-            } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
-                // 2つ揃い（小当たり）
-                const payout = 20;
-                medals += payout;
-                messageDisplay.textContent = `Any 2! ${payout} WIN!`;
-                messageDisplay.style.color = "#3498db";
-            } else {
-                messageDisplay.textContent = "Try Again...";
-                messageDisplay.style.color = "#bdc3c7";
-            }
-            updateMedalsDisplay();
-        }
-
-        function spin() {
-            if (isSpinning) return;
-            if (medals < betAmount) {
-                messageDisplay.textContent = "クレジットが足りません！";
-                messageDisplay.style.color = "#e74c3c";
-                return;
-            }
-
-            // ベットを消費
-            medals -= betAmount;
-            updateMedalsDisplay();
-            
-            isSpinning = true;
-            spinBtn.disabled = true;
-            messageDisplay.textContent = "";
-            messageDisplay.className = ""; // アニメーションリセット
-            messageDisplay.style.color = "";
-
-            // 回転アニメーション開始
-            reels.forEach(reel => reel.classList.add('spinning'));
-
-            let count = 0;
-            const maxCount = 20; // 回転回数
-            const intervalTime = 50; // 更新間隔(ms)
-
-            const spinInterval = setInterval(() => {
-                reels.forEach(reel => {
-                    reel.textContent = getRandomSymbol();
-                });
-                count++;
-
-                if (count >= maxCount) {
-                    clearInterval(spinInterval);
-                    reels.forEach(reel => reel.classList.remove('spinning'));
-
-                    // 最終結果を決定
-                    const finalResults = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-                    
-                    reels.forEach((reel, index) => {
-                        reel.textContent = finalResults[index];
-                    });
-
-                    checkWin(finalResults);
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                }
-            }, intervalTime);
-        }
-
-        spinBtn.addEventListener('click', spin);
-    </script>
-</body>
-</html>
+        /* 豪快なゴールドスピンボタン */
+        .spin-button {
+            background: linear-gradient(to bottom, #f1c40f 0%, #d4af37 100%);
+            color: #4a0e17;
+            border: 2px solid #fff;
+            padding: 15px
