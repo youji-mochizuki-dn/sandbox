@@ -382,7 +382,7 @@
             creditDisp.textContent = credit;
             playSound(440, 0.05, 'square');
 
-            // 全セルリセット＆回転アニメーション
+            // 全セルリセット＆回転アニメーション開始
             for (let c = 0; c < 5; c++) {
                 for (let r = 0; r < 3; r++) {
                     cellMatrix[c][r].classList.remove('hit-highlight');
@@ -390,10 +390,14 @@
                 }
             }
 
+            // ★ 修正箇所：まだ回転中のリールだけ図柄をシャッフルする
             const dummyInterval = setInterval(() => {
                 for (let c = 0; c < 5; c++) {
-                    for (let r = 0; r < 3; r++) {
-                        cellMatrix[c][r].textContent = getRandomSymbol();
+                    // spinning-cellクラスが付いている（＝まだ止まっていない）列のみ更新
+                    if (cellMatrix[c][0].classList.contains('spinning-cell')) {
+                        for (let r = 0; r < 3; r++) {
+                            cellMatrix[c][r].textContent = getRandomSymbol();
+                        }
                     }
                 }
             }, 50);
@@ -405,12 +409,15 @@
                     resultMatrix[c] = [];
                     for(let r=0; r<3; r++){
                         resultMatrix[c][r] = getRandomSymbol();
+                        // 該当列の回転アニメーションを止める
                         cellMatrix[c][r].classList.remove('spinning-cell');
+                        // 最終結果を画面に反映
                         cellMatrix[c][r].textContent = resultMatrix[c][r];
                     }
                     
                     playSound(500 + (c * 100), 0.08, 'triangle', 0.1);
 
+                    // 最後の列が止まったら判定へ
                     if (c === 4) {
                         clearInterval(dummyInterval);
                         checkResults(resultMatrix);
@@ -419,7 +426,6 @@
             }
         }
 
-        // ★ 判定ロジックを修正：「途中から」でも3連続以上なら当たり！
         function checkResults(matrix) {
             let totalWin = 0;
             let hitLinesCount = 0;
