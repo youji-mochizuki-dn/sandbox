@@ -295,17 +295,17 @@
     </div>
 
     <script>
-        // ドラクエ風リール図柄 (下に行くほどレア)
+        // ドラクエ風リール図柄 (甘めに調整！)
         const symbolPool = [
-            "💧", "💧", "💧", "💧", "💧", "💧", // スライム風 (最頻出)
-            "🍒", "🍒", "🍒", "🍒", "🍒",       // チェリー
-            "🔔", "🔔", "🔔", "🔔",             // ベル
-            "🍉", "🍉", "🍉",                   // スイカ
-            "🅱️", "🅱️",                         // BAR
-            "7️⃣"                                // 7
+            "💧", "💧", "💧", "💧", "💧", "💧", "💧", // 7枠: スライム風
+            "🍒", "🍒", "🍒", "🍒", "🍒", "🍒",       // 6枠: チェリー
+            "🔔", "🔔", "🔔", "🔔", "🔔",             // 5枠: ベル
+            "🍉", "🍉", "🍉", "🍉",                   // 4枠: スイカ
+            "🅱️", "🅱️", "🅱️",                         // 3枠: BAR
+            "7️⃣", "7️⃣"                                // 2枠: 7
         ];
 
-        // 役と配当倍率
+        // 配当「倍率」テーブル
         const payoutTable = {
             "7️⃣": { 3: 100, 4: 1000, 5: 10000 },
             "🅱️": { 3: 50,  4: 200,  5: 2000 },
@@ -323,7 +323,8 @@
         ];
 
         let credit = 3000;
-        const betCost = 30; // 1ライン10枚 × 横3ライン
+        const lineBet = 10; // 1ラインあたりの掛け金
+        const betCost = lineBet * 3; // 10枚 × 横3ライン = 30枚
         let isSpinning = false;
         let audioCtx = null;
 
@@ -382,7 +383,6 @@
             creditDisp.textContent = credit;
             playSound(440, 0.05, 'square');
 
-            // 全セルリセット＆回転アニメーション開始
             for (let c = 0; c < 5; c++) {
                 for (let r = 0; r < 3; r++) {
                     cellMatrix[c][r].classList.remove('hit-highlight');
@@ -390,10 +390,8 @@
                 }
             }
 
-            // ★ 修正箇所：まだ回転中のリールだけ図柄をシャッフルする
             const dummyInterval = setInterval(() => {
                 for (let c = 0; c < 5; c++) {
-                    // spinning-cellクラスが付いている（＝まだ止まっていない）列のみ更新
                     if (cellMatrix[c][0].classList.contains('spinning-cell')) {
                         for (let r = 0; r < 3; r++) {
                             cellMatrix[c][r].textContent = getRandomSymbol();
@@ -409,15 +407,12 @@
                     resultMatrix[c] = [];
                     for(let r=0; r<3; r++){
                         resultMatrix[c][r] = getRandomSymbol();
-                        // 該当列の回転アニメーションを止める
                         cellMatrix[c][r].classList.remove('spinning-cell');
-                        // 最終結果を画面に反映
                         cellMatrix[c][r].textContent = resultMatrix[c][r];
                     }
                     
                     playSound(500 + (c * 100), 0.08, 'triangle', 0.1);
 
-                    // 最後の列が止まったら判定へ
                     if (c === 4) {
                         clearInterval(dummyInterval);
                         checkResults(resultMatrix);
@@ -436,7 +431,6 @@
                 let hitSymbol = null;
                 let hitStartIndex = 0;
 
-                // 開始位置を0列目(左端)、1列目、2列目とズラしてチェック
                 for (let i = 0; i <= 2; i++) {
                     const startSymbol = matrix[line.cells[i][0]][line.cells[i][1]];
                     let matchCount = 1;
@@ -449,7 +443,6 @@
                         }
                     }
 
-                    // 最も長く連続したものを記録
                     if (matchCount >= 3 && matchCount > bestMatchCount) {
                         bestMatchCount = matchCount;
                         hitSymbol = startSymbol;
@@ -458,11 +451,13 @@
                 }
 
                 if (bestMatchCount >= 3) {
-                    const winAmount = payoutTable[hitSymbol][bestMatchCount];
+                    // ★修正：倍率 × 1ライン分の掛け金（10）を払い出し枚数にする！
+                    const winMultiplier = payoutTable[hitSymbol][bestMatchCount];
+                    const winAmount = winMultiplier * lineBet; 
+                    
                     totalWin += winAmount;
                     hitLinesCount++;
 
-                    // 光らせる対象のマスを保存
                     for (let i = 0; i < bestMatchCount; i++) {
                         highlightTargets.push(line.cells[hitStartIndex + i]);
                     }
@@ -470,7 +465,6 @@
             });
 
             if (totalWin > 0) {
-                // 重複排除してハイライト
                 highlightTargets.forEach(coord => {
                     cellMatrix[coord[0]][coord[1]].classList.add('hit-highlight');
                 });
@@ -488,7 +482,8 @@
 
         function animatePayout(amount) {
             let currentPayout = 0;
-            const step = amount > 1000 ? 50 : (amount > 100 ? 5 : 1);
+            // 払い出し枚数が大きくなったので、カウントアップの速度を調整
+            const step = amount >= 1000 ? 50 : (amount >= 100 ? 10 : 2);
             
             const payoutTimer = setInterval(() => {
                 if (currentPayout < amount) {
