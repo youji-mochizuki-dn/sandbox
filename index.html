@@ -284,7 +284,7 @@
         <div class="controls">
             <div class="bet-info">
                 有効: 横3ライン (斜め無効)<br>
-                左端から3つ以上連続で当たり！
+                ライン上で3つ以上連続すれば当たり！
             </div>
             <button class="spin-button" id="spin-btn">SPIN</button>
         </div>
@@ -315,7 +315,7 @@
             "💧": { 3: 2,   4: 10,   5: 50 }
         };
 
-        // ★ ドラクエ伝統の「5リールは横3ラインのみ（斜めは無効）」
+        // 有効ライン定義（横3本のみ）
         const payLines = [
             { name: "上段", cells: [[0,0], [1,0], [2,0], [3,0], [4,0]] },
             { name: "中段", cells: [[0,1], [1,1], [2,1], [3,1], [4,1]] },
@@ -419,38 +419,52 @@
             }
         }
 
+        // ★ 判定ロジックを修正：「途中から」でも3連続以上なら当たり！
         function checkResults(matrix) {
             let totalWin = 0;
             let hitLinesCount = 0;
             const highlightTargets = [];
 
             payLines.forEach(line => {
-                const startCellCoords = line.cells[0];
-                const firstSymbol = matrix[startCellCoords[0]][startCellCoords[1]];
-                
-                let matchCount = 1;
+                let bestMatchCount = 0;
+                let hitSymbol = null;
+                let hitStartIndex = 0;
 
-                for (let i = 1; i < 5; i++) {
-                    const coords = line.cells[i];
-                    if (matrix[coords[0]][coords[1]] === firstSymbol) {
-                        matchCount++;
-                    } else {
-                        break; 
+                // 開始位置を0列目(左端)、1列目、2列目とズラしてチェック
+                for (let i = 0; i <= 2; i++) {
+                    const startSymbol = matrix[line.cells[i][0]][line.cells[i][1]];
+                    let matchCount = 1;
+
+                    for (let j = i + 1; j < 5; j++) {
+                        if (matrix[line.cells[j][0]][line.cells[j][1]] === startSymbol) {
+                            matchCount++;
+                        } else {
+                            break; 
+                        }
+                    }
+
+                    // 最も長く連続したものを記録
+                    if (matchCount >= 3 && matchCount > bestMatchCount) {
+                        bestMatchCount = matchCount;
+                        hitSymbol = startSymbol;
+                        hitStartIndex = i;
                     }
                 }
 
-                if (matchCount >= 3) {
-                    const winAmount = payoutTable[firstSymbol][matchCount];
+                if (bestMatchCount >= 3) {
+                    const winAmount = payoutTable[hitSymbol][bestMatchCount];
                     totalWin += winAmount;
                     hitLinesCount++;
 
-                    for (let i = 0; i < matchCount; i++) {
-                        highlightTargets.push(line.cells[i]);
+                    // 光らせる対象のマスを保存
+                    for (let i = 0; i < bestMatchCount; i++) {
+                        highlightTargets.push(line.cells[hitStartIndex + i]);
                     }
                 }
             });
 
             if (totalWin > 0) {
+                // 重複排除してハイライト
                 highlightTargets.forEach(coord => {
                     cellMatrix[coord[0]][coord[1]].classList.add('hit-highlight');
                 });
